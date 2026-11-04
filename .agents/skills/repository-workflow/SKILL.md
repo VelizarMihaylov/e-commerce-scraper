@@ -16,7 +16,7 @@ description: Manage scraper GitHub issues and project status, and deliver reques
 
 1. Inspect the relevant issue and existing work before creating duplicates. Write the problem, scope, rationale and observable acceptance criteria. Acknowledge existing drafts rather than presenting them as new work.
 2. Before Git operations, inspect `git status`, the repository root and remotes. If the scaffold has no Git repository yet, initialize it only as part of requested repository setup; never run Git mutations in a parent or neighbouring repository by mistake.
-3. Read and follow the [Branch Management skill](../branch-management/SKILL.md). Reuse a suitable existing branch or create one using its issue-based naming convention.
+3. Read and follow the [Branch Management skill](../branch-management/SKILL.md). Reuse existing work; for new branches in the GitHub delivery workflow, use its linked-branch creation procedure and explicit issue-based name.
 4. Move the project item to `In Progress` when issue implementation begins. Fetch current project fields and option IDs before updates; do not hardcode API IDs.
 
 ## Verification and delivery
