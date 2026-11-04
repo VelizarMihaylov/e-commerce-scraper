@@ -179,4 +179,25 @@ describe('catalogue traversal', () => {
       `Unexpected product page structure at ${product(3)}`,
     );
   });
+  it('reports actual discovered listings and completed product counts', async () => {
+    const responses = catalogue();
+    const events: unknown[] = [];
+    await collectProductPages({
+      fetchHtml: (url) => Promise.resolve(responses.get(url) ?? ''),
+      onProgress: (event) => events.push(event),
+    });
+    expect(events).toEqual([
+      { phase: 'discovery', completed: 0 },
+      { phase: 'discovery', completed: 1 },
+      { phase: 'discovery', completed: 2 },
+      { phase: 'discovery', completed: 3 },
+      { phase: 'discovery', completed: 4 },
+      { phase: 'discovery', completed: 5 },
+      { phase: 'products', completed: 0, total: 4 },
+      { phase: 'products', completed: 1, total: 4 },
+      { phase: 'products', completed: 2, total: 4 },
+      { phase: 'products', completed: 3, total: 4 },
+      { phase: 'products', completed: 4, total: 4 },
+    ]);
+  });
 });
