@@ -16,9 +16,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-types": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "check": "pnpm format:check && pnpm lint && pnpm check-types && pnpm test && pnpm build"
+    "test": "pnpm build && vitest run",
+    "test:watch": "vitest --exclude src/__tests__/cli.test.ts",
+    "check": "pnpm format:check && pnpm lint && pnpm check-types && pnpm test",
+    "smoke:live": "pnpm build && node scripts/live-smoke.mjs"
   },
   "dependencies": {
     "cheerio": "1.1.2",
