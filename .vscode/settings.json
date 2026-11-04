@@ -1,0 +1,29 @@
+{
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript"],
+  "editor.formatOnSave": true,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnSave": true
+  },
+  "prettier.configPath": ".prettierrc.json",
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ]
+}

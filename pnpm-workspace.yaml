@@ -1,0 +1,2 @@
+# Establish an independent workspace when this folder is inside another repo.
+packages: []
