@@ -8,7 +8,13 @@ export interface ProductPage {
   html: string;
 }
 
+export type CatalogueProgress =
+  | { phase: 'discovery'; completed: number }
+  | { phase: 'products'; completed: number; total: number };
+
 interface CatalogueOptions {
+  signal?: AbortSignal;
+  onProgress?: (event: CatalogueProgress) => void;
   fetchHtml?: HtmlFetcher;
   startUrl?: string;
   concurrency?: number;
@@ -51,7 +57,9 @@ export function discoverCatalogueLinks(
 }
 
 export async function collectProductPages({
-  fetchHtml = createHtmlFetcher(),
+  signal,
+  onProgress,
+  fetchHtml = createHtmlFetcher(signal ? { signal } : {}),
   startUrl = TARGET_URL,
   concurrency = 3,
 }: CatalogueOptions = {}): Promise<ProductPage[]> {
@@ -78,7 +86,10 @@ export async function collectProductPages({
     }
   }
 
+  let listingsCompleted = 0;
+  onProgress?.({ phase: 'discovery', completed: 0 });
   while (queue.length) {
+    signal?.throwIfAborted();
     const url = queue.shift();
     if (!url) break;
     const html = await retrieve(url);
@@ -90,11 +101,15 @@ export async function collectProductPages({
       }
     }
     for (const product of links.productUrls) products.add(product);
+    onProgress?.({ phase: 'discovery', completed: ++listingsCompleted });
   }
 
   const urls = [...products];
   const pages: ProductPage[] = [];
+  let productsCompleted = 0;
+  onProgress?.({ phase: 'products', completed: 0, total: urls.length });
   for (let index = 0; index < urls.length; index += concurrency) {
+    signal?.throwIfAborted();
     const batch = await Promise.all(
       urls.slice(index, index + concurrency).map(async (url) => {
         const html = await retrieve(url);
@@ -102,6 +117,12 @@ export async function collectProductPages({
         if ($('.test-site .thumbnail h4.title').length !== 1) {
           throw new Error(`Unexpected product page structure at ${url}`);
         }
+        signal?.throwIfAborted();
+        onProgress?.({
+          phase: 'products',
+          completed: ++productsCompleted,
+          total: urls.length,
+        });
         return { url, html };
       }),
     );

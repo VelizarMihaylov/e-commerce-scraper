@@ -2,6 +2,7 @@ export type HtmlFetcher = (url: string) => Promise<string>;
 
 interface HttpOptions {
   request?: typeof fetch;
+  signal?: AbortSignal;
   timeoutMs?: number;
   retries?: number;
   retryDelayMs?: number;
@@ -17,6 +18,7 @@ const transientStatuses = new Set([408, 429, 500, 502, 503, 504]);
 
 export function createHtmlFetcher({
   request = fetch,
+  signal,
   timeoutMs = 10_000,
   retries = 2,
   retryDelayMs = 250,
@@ -36,11 +38,14 @@ export function createHtmlFetcher({
 
   return async (url) => {
     for (let attempt = 0; ; attempt += 1) {
+      signal?.throwIfAborted();
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const response = await request(url, {
-          signal: controller.signal,
+          signal: signal
+            ? AbortSignal.any([signal, controller.signal])
+            : controller.signal,
           // Reject redirects rather than fetching outside the catalogue scope.
           redirect: 'manual',
           headers: {
@@ -69,6 +74,7 @@ export function createHtmlFetcher({
         if (!html.trim()) throw new Error('Empty HTML response');
         return html;
       } catch (error: unknown) {
+        signal?.throwIfAborted();
         const retryable =
           controller.signal.aborted ||
           error instanceof TypeError ||
@@ -88,9 +94,21 @@ export function createHtmlFetcher({
       } finally {
         clearTimeout(timer);
       }
-      await new Promise<void>((resolve) =>
-        setTimeout(resolve, retryDelayMs * 2 ** attempt),
-      );
+      await new Promise<void>((resolve, reject) => {
+        signal?.throwIfAborted();
+        const timer = setTimeout(
+          () => {
+            signal?.removeEventListener('abort', abort);
+            resolve();
+          },
+          retryDelayMs * 2 ** attempt,
+        );
+        function abort() {
+          clearTimeout(timer);
+          reject(new Error('Request cancelled'));
+        }
+        signal?.addEventListener('abort', abort, { once: true });
+      });
     }
   };
 }

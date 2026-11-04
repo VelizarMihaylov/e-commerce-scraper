@@ -152,4 +152,42 @@ describe('HTML retrieval', () => {
     );
     expect(request).toHaveBeenCalledTimes(1);
   });
+  it('aborts an active request without retrying when the caller cancels', async () => {
+    const controller = new AbortController();
+    const request = vi.fn<typeof fetch>().mockImplementation(
+      (_url, options) =>
+        new Promise((_resolve, reject) => {
+          options?.signal?.addEventListener(
+            'abort',
+            () => reject(new DOMException('Aborted', 'AbortError')),
+            { once: true },
+          );
+        }),
+    );
+    const assertion = expect(
+      createHtmlFetcher({ request, signal: controller.signal })(TARGET_URL),
+    ).rejects.toThrow();
+    controller.abort();
+    await assertion;
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+  it('cancels retry backoff immediately and clears its timer', async () => {
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    const request = vi
+      .fn<typeof fetch>()
+      .mockRejectedValue(new TypeError('network failure'));
+    const assertion = expect(
+      createHtmlFetcher({
+        request,
+        signal: controller.signal,
+        retryDelayMs: 5000,
+      })(TARGET_URL),
+    ).rejects.toThrow();
+    await vi.advanceTimersByTimeAsync(0);
+    controller.abort();
+    await assertion;
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });

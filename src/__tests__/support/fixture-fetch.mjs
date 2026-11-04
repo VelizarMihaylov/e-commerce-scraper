@@ -4,6 +4,11 @@ import { load } from 'cheerio';
 
 const root = 'https://webscraper.io/test-sites/e-commerce/static';
 const scenario = process.env.SCRAPER_TEST_SCENARIO;
+if (scenario === 'interactive') {
+  Object.defineProperty(process.stderr, 'isTTY', { value: true });
+  process.env.CI = '';
+  process.env.TERM = 'xterm';
+}
 const fixture = (name) =>
   readFileSync(
     new URL(`../fixtures/catalogue/${name}.html`, import.meta.url),
@@ -57,7 +62,20 @@ if (scenario === 'parse-failure') {
   pages.set(`${root}/product/136`, invalid.html());
 }
 
-globalThis.fetch = (input) => {
+globalThis.fetch = (input, options) => {
+  if (scenario === 'cancel') {
+    process.send?.('fetch-started');
+    return new Promise((_resolve, reject) => {
+      options.signal.addEventListener(
+        'abort',
+        () => {
+          process.send?.('fetch-aborted');
+          reject(new DOMException('Aborted', 'AbortError'));
+        },
+        { once: true },
+      );
+    });
+  }
   const url = String(input);
   if (!scenario || scenario === 'no-network')
     throw new Error(`Unexpected network request: ${url}`);
