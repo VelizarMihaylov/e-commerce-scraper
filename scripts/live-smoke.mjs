@@ -9,7 +9,11 @@ mkdirSync(directory, { recursive: true });
 const started = Date.now();
 const run = spawnSync(
   process.execPath,
-  [fileURLToPath(new URL('../dist/cli.js', import.meta.url))],
+  [
+    fileURLToPath(new URL('../dist/cli.js', import.meta.url)),
+    'scrape',
+    '--quiet',
+  ],
   {
     encoding: 'utf8',
     timeout: 120_000,

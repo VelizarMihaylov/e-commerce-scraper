@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "tsx src/cli.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node -e \"require('node:fs').chmodSync('dist/cli.js', 0o755)\"",
     "start": "node dist/cli.js",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
@@ -22,6 +22,7 @@
     "smoke:live": "pnpm build && node scripts/live-smoke.mjs"
   },
   "dependencies": {
+    "@clack/prompts": "1.8.1",
     "cheerio": "1.1.2",
     "commander": "15.0.0",
     "zod": "4.2.1"
@@ -38,5 +39,11 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.49.0",
     "vitest": "4.1.11"
-  }
+  },
+  "bin": {
+    "e-commerce-scraper": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ]
 }
