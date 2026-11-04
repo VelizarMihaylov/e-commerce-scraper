@@ -22,9 +22,7 @@ try {
       'after',
       `
 Successful runs write one JSON object to stdout; errors go to stderr.
-Save results: node dist/cli.js > results.json
-
-Status: scaffold only; scraping is not implemented yet.`,
+Save results: node dist/cli.js > results.json`,
     )
     .action(async () => {
       const result = scrapeResultSchema.parse(await scrape());
