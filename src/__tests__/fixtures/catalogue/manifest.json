@@ -1,0 +1,84 @@
+{
+  "capturedOn": "2026-11-04",
+  "source": "Public Web Scraper training site",
+  "transformation": "Cheerio serialization of .test-site; images and ratings removed, and sidebar removed on product details. Inter-tag whitespace compacted; data fields, option values, disabled states and links retained. These are reduced HTML fixtures, not complete page snapshots. Trailing line whitespace trimmed.",
+  "pages": [
+    {
+      "file": "home.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static",
+      "purpose": "Featured products and top-level categories; no pagination.",
+      "sourceSha256": "e164d5bd38e643ba0d095a4348d3c907be4fcbe5ce0d7fff12f7323046b18b47",
+      "fixtureSha256": "6ceedd75985734481ea90c73c3b45e1c71f38696a24e4b6846d5c690e04b4019"
+    },
+    {
+      "file": "computers.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/computers",
+      "purpose": "Nested laptop/tablet navigation and a truncated product link title.",
+      "sourceSha256": "d1dfd15c3d5516bb01dbadcd40e32eee6ea5df145603e7df46a8896d05d35648",
+      "fixtureSha256": "06829739159dc4b56f98f6feb5f27ac1d43067ebfee6a4ed6285519848ed8614"
+    },
+    {
+      "file": "phones.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/phones",
+      "purpose": "Touch-phone navigation and products repeated on leaf pages.",
+      "sourceSha256": "d5fee19f68adb3617e8274c04c25fbe3a7b672871939b31532ea1900c79a4f17",
+      "fixtureSha256": "7dcbf3f538b4ca4efd30fc324c231baaa59728567f5438ba06931c07d4b6e708"
+    },
+    {
+      "file": "laptops-first.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
+      "purpose": "Six products; next link duplicates a numbered link; omitted middle page links.",
+      "sourceSha256": "80addf9f6ad8b37ebf72e8763efb14c6940e9fe1eb659d3eae5776e58d02499f",
+      "fixtureSha256": "ec1369c62640885fca735cc16cfe7427dd3f96753ae1c02a5eef1a0b89e1bb53"
+    },
+    {
+      "file": "laptops-last.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=20",
+      "purpose": "Three products, page=1 alias and disabled Next with no href.",
+      "sourceSha256": "8e567639b1fc9f5080bf2542fb4dcf41e00c609389bf2576e8f3c8b34e27587a",
+      "fixtureSha256": "9e8d56c3c8c34d9fa94ebdedceafc3288f1a0667c1bc305d903b2cbd0a2629a9"
+    },
+    {
+      "file": "phones-last.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/phones/touch?page=2",
+      "purpose": "Three distinct product IDs with identical names and prices.",
+      "sourceSha256": "5a10d2865f818a6e3fb068d43d1b0398d06d2fc58c53da6d295e09e603c8c4de",
+      "fixtureSha256": "6013f6144a9f324087ecc445a7b43337df9815b559e95a7042febaab04ebf1e3"
+    },
+    {
+      "file": "phone-colors.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/product/3",
+      "purpose": "Colour dropdown with empty placeholder; no storage options.",
+      "sourceSha256": "67251c8643b5fe243c755b4212847616cf4837cfd2ab7b94291f5d0b061c729a",
+      "fixtureSha256": "6b8afb943732e11c0aac4cc0fd8fecafcad4ad3d9f38cb817f2a3c41523bbed8"
+    },
+    {
+      "file": "tablet-storage-colors.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/product/10",
+      "purpose": "Storage and colours on the same product.",
+      "sourceSha256": "faa75a7e267b645b8b2c16649465e06249c9f1bbc298c26d11f20156df05fbf2",
+      "fixtureSha256": "b782c6b55bad3e5a8a4bceafacdffe3591799c7aa15413ab3a003c609eb1faa8"
+    },
+    {
+      "file": "laptop-storage.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/product/136",
+      "purpose": "Enabled 128/256/512 storage and disabled 1024; no colours.",
+      "sourceSha256": "e1861052d459299a2cfb45cae728520bae03e51e2dd08452ff025a929266b275",
+      "fixtureSha256": "1b46bf4ad84cc644479bfb0e74f1689ebf57f0d75270c84bb2af09d925bddfda"
+    },
+    {
+      "file": "laptop-long-name.html",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/product/127",
+      "purpose": "Full detail name corresponding to a truncated listing title.",
+      "sourceSha256": "cdee50e000934830f4c6e79c57e2091632bc24e7138e02b0f2d88e0600aceed0",
+      "fixtureSha256": "b3f00a5fa24a63ad506d2646937564d55bb8c665f063d398be3333abca05899b"
+    }
+  ],
+  "javascript": {
+    "file": "product-behaviour.txt",
+    "url": "https://webscraper.io/js/app.js?id=e95f7d9783f442c064c61e4f45794b47",
+    "purpose": "Exact excerpt defining EcommerceProduct, including price modifiers and colour title changes; evidence only, never execute as part of tests.",
+    "sourceSha256": "64a11d0355e26a1efb02859f6414eae9a90f6773d7938a2f32299e4a663bde83",
+    "fixtureSha256": "d2547cd86d1eb0bc9a487642da39391f5699ea31976d8c3e8f47f3c30bfa8dd7"
+  }
+}

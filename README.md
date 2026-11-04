@@ -64,7 +64,7 @@ Add `http.ts` and `parse.ts` when implementing network behaviour and site-specif
 
 ## Remaining assessment work
 
-- [ ] Inspect category navigation, pagination, configuration prices, and colour options.
+- [x] Inspect category navigation, pagination, configuration prices, and colour options. See the [catalogue investigation](docs/catalogue-investigation.md) and its fixture manifest.
 - [ ] Traverse the complete catalogue within the target site and deduplicate products.
 - [ ] Extract full names, descriptions, and prices from product detail pages.
 - [ ] Expand each HDD option into a separate product with its actual price and configuration name.
