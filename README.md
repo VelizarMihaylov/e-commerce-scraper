@@ -45,7 +45,7 @@ This repository has its own package manifest, lockfile and configurations. GitHu
 
 The CLI uses Commander for generated help and consistent argument errors. Run `node dist/cli.js --help` for usage or `node dist/cli.js --version` for the package version. Unsupported options and positional arguments exit with code 1.
 
-Scraping is not implemented yet: normal execution exits with code 1, explains the limitation on stderr and emits no JSON.
+Catalogue retrieval is implemented as an internal module. Product extraction and CLI integration are still pending: normal CLI execution exits with code 1, explains the limitation on stderr and emits no JSON.
 
 Once scraping is implemented, capture JSON directly from the built entry point to avoid package-manager output:
 
@@ -57,21 +57,33 @@ node dist/cli.js > results.json
 
 - `src/cli.ts`: argument handling, JSON output, stderr diagnostics, exit status.
 - `src/scrape.ts`: scraping entry point; currently an explicit unimplemented failure.
+- `src/catalogue.ts`: category/pagination discovery and collection of unique product detail pages.
+- `src/http.ts`: HTML retrieval with request timeouts and bounded transient retries.
+- `src/site.ts`: catalogue URL scope and canonicalization.
 - `src/product.ts`: Zod output schemas and inferred TypeScript types.
 - `src/__tests__/`: neighbouring Vitest tests with explicit expected outcomes.
 
-Add `http.ts` and `parse.ts` when implementing network behaviour and site-specific parsing. Keep external operations separate from pure parsing and aggregation. Use strict TypeScript, ESM, named exports, and explicit `.js` import extensions for compiled Node execution. Mock network boundaries in unit tests; keep live verification separate.
+Add `parse.ts` when implementing product extraction. Keep external operations separate from pure parsing and aggregation. Use strict TypeScript, ESM, named exports, and explicit `.js` import extensions for compiled Node execution. Mock network boundaries in unit tests; keep live verification separate.
+
+## Catalogue retrieval
+
+`collectProductPages()` follows category navigation and actual Next links, including pages omitted from the numbered pagination controls. It stays within the target catalogue, normalizes page-one aliases and removes duplicate product URLs. Each returned item retains its canonical `url` and detail-page `html` for later extraction.
+
+Listing discovery is sequential; product details are fetched in batches of three, preserving discovery order. HTTP requests have a 10-second timeout covering the response body and at most two retries for network failures, timeouts and transient HTTP statuses (408, 429, 500, 502, 503, 504), with 250ms then 500ms delays. Redirects, non-HTML responses and unexpected page structures fail explicitly. Any failed page rejects the collection rather than returning partial results.
+
+A live traversal check on 4 November 2026 retrieved **29 listing pages and 147 unique product pages** in approximately **12.4 seconds**, with no duplicate requests and a maximum of three concurrent requests. These are observed counts, not hardcoded targets. This validates discovery and retrieval; configuration prices, totals and the complete CLI still need verification. Unit tests use captured fixtures and controlled responses without accessing the live site.
 
 ## Remaining assessment work
 
 - [x] Inspect category navigation, pagination, configuration prices, and colour options. See the [catalogue investigation](docs/catalogue-investigation.md) and its fixture manifest.
-- [ ] Traverse the complete catalogue within the target site and deduplicate products.
+- [x] Traverse the complete catalogue within the target site and deduplicate products.
 - [ ] Extract full names, descriptions, and prices from product detail pages.
 - [ ] Expand each HDD option into a separate product with its actual price and configuration name.
 - [ ] Include `colors` only when multiple distinct options exist.
 - [ ] Parse and sum prices in integer cents; convert to JSON numbers at the output boundary.
-- [ ] Add request timeouts, bounded transient retries, and modest concurrency.
-- [ ] Fail clearly on missing data or incomplete retrieval.
+- [x] Add request timeouts, bounded transient retries, and modest concurrency.
+- [x] Fail clearly on incomplete retrieval or unexpected page structure.
+- [ ] Fail clearly on missing required product data.
 - [ ] Test fixtures, pagination, duplicates, configurations, totals, and CLI output/failure behaviour.
 - [ ] Perform a live smoke test and document results, elapsed work time, and trade-offs.
 

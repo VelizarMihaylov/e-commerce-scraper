@@ -1,6 +1,6 @@
 import type { ScrapeResult } from './product.js';
 
-export const TARGET_URL = 'https://webscraper.io/test-sites/e-commerce/static';
+export { TARGET_URL } from './site.js';
 
 export function scrape(): Promise<ScrapeResult> {
   // Fail explicitly until catalogue traversal and product parsing are implemented.
