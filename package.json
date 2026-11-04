@@ -1,0 +1,40 @@
+{
+  "name": "e-commerce-scraper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Command-line product scraper for the Web Scraper e-commerce test site",
+  "type": "module",
+  "packageManager": "pnpm@10.25.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/cli.js",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm format:check && pnpm lint && pnpm check-types && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "cheerio": "1.1.2",
+    "zod": "4.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.2",
+    "@types/node": "^24.0.0",
+    "eslint": "9.39.2",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.4",
+    "globals": "16.5.0",
+    "prettier": "3.7.4",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.49.0",
+    "vitest": "4.1.11"
+  }
+}
