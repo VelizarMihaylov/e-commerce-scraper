@@ -32,7 +32,7 @@ This repository has its own package manifest, lockfile and configurations. GitHu
 
 | Command             | Purpose                                             |
 | ------------------- | --------------------------------------------------- |
-| `pnpm dev --help`   | Run CLI help from TypeScript                        |
+| `pnpm dev`          | Run from TypeScript; show help without arguments    |
 | `pnpm build`        | Compile the CLI into `dist/`                        |
 | `pnpm start`        | Show the compiled CLI help                          |
 | `pnpm check-types`  | Type-check source and tests                         |
@@ -44,39 +44,74 @@ This repository has its own package manifest, lockfile and configurations. GitHu
 | `pnpm smoke:live`   | Build, run live CLI and save verification artifacts |
 | `pnpm check`        | Check formatting, lint, types, tests, and build     |
 
-The CLI uses Commander for generated help and consistent argument errors. Run `node dist/cli.js --help` for usage or `node dist/cli.js --version` for the package version. Unknown commands, unsupported options and unexpected arguments exit with code 1 and show a help hint.
+## How to use
 
-Run without arguments to see commands and examples. Use the explicit `scrape` command to fetch products. From this repository:
+After completing setup, run these commands from the project directory. **Use `pnpm dev` for local development**: it runs the TypeScript source directly, with no build step required. Running without arguments shows help; add `scrape` to fetch products.
+
+```bash
+pnpm dev                              # Show commands and examples
+pnpm dev scrape --help                # Show scrape options
+pnpm dev scrape                       # Print the JSON result in the terminal
+pnpm dev scrape --output results.json  # Save the JSON result to a new file
+```
+
+`-o` is short for `--output`. Both require a filename: `pnpm dev scrape -o results.json` is valid; `pnpm dev scrape -o` reports a missing argument. Choose a new filename for each saved run, or move/remove the previous file yourself.
+
+### Choosing how to run the CLI
+
+These commands run the same CLI and accept the same `scrape` options:
+
+| Invocation           | What it runs                             | Preparation                                     |
+| -------------------- | ---------------------------------------- | ----------------------------------------------- |
+| `pnpm dev`           | TypeScript source                        | Install dependencies; no build needed           |
+| `pnpm start`         | Compiled JavaScript in `dist/`           | Run `pnpm build` first and after source changes |
+| `e-commerce-scraper` | The linked executable from this checkout | Run `pnpm build` and `npm link` first           |
+
+For example, to run the compiled application:
 
 ```bash
 pnpm build
-pnpm start
 pnpm start scrape --output results.json
 ```
 
-`--output` saves one JSON object containing `results` and `total` to a **new file**. Existing files are preserved, and missing destination directories produce an actionable error. The complete file is staged in the destination directory and published only after the scrape succeeds. Failed or cancelled scrapes do not publish an output file.
+The help text calls the program `e-commerce-scraper` regardless of how you launch it. When using the development command, replace that name with `pnpm dev`: `e-commerce-scraper scrape --help` becomes `pnpm dev scrape --help`.
 
-For the shorter executable name, optionally link the built local package:
+### Optional: enable the executable name
+
+You can use the CLI entirely through `pnpm dev` or `pnpm start`. To make `e-commerce-scraper` available as a shell command, build and link the local package:
 
 ```bash
+pnpm build
 npm link
 e-commerce-scraper
 e-commerce-scraper scrape --help
 e-commerce-scraper scrape --output results.json
 ```
 
-The package's `bin` entry exposes `e-commerce-scraper`; the build supplies its Node shebang and executable permissions. Linking uses this checkout, so rebuild after changing TypeScript. Without linking, `node dist/cli.js` supports the same commands and options.
+Linking points to this checkout; rebuild after changing TypeScript. It does not install a separate published version of the application.
 
-For scripts, omit `--output` and redirect JSON directly from the entry point, avoiding package-manager messages:
+### Output, progress and cancellation
+
+`--output` saves one JSON object containing `results` and `total` to a **new file**, leaving stdout empty. Existing files are preserved, and missing destination directories produce an actionable error. The complete file is staged in the destination directory and published only after the scrape succeeds. Failed or cancelled scrapes do not publish an output file.
+
+Terminal progress shows discovered listing counts, fetched product counts, processing and a completion summary. Add `--quiet` (or `-q`) to suppress progress and completion messages while keeping errors:
 
 ```bash
-node dist/cli.js scrape > results.json
-node dist/cli.js scrape --quiet > results.json
+pnpm dev scrape --quiet --output results.json
 ```
 
-Terminal progress uses Clack on **stderr**: discovered listing counts, fetched product counts, processing and a completion summary. It remains visible when stdout is redirected to a file. `--quiet` suppresses progress and completion messages while keeping errors. When stderr is not a terminal, in CI, or with `TERM=dumb`, progress is automatically disabled; no prompts or animations are emitted. Output-file mode leaves stdout empty.
+Progress goes to **stderr**, keeping JSON on **stdout** separate. It remains visible when stdout is redirected. When stderr is not a terminal, in CI, or with `TERM=dumb`, progress is automatically disabled. No prompts require an answer.
 
-Press **Ctrl+C** to abort requests and retry waits; cancellation exits with code 130 (SIGTERM: 143). Errors go to stderr with exit code 1 and no partial-success JSON. Help/version exit successfully without fetching. The earlier bare invocation that started scraping is replaced by the explicit `scrape` command.
+For scripts that need only JSON, build and run the entry point directly to avoid package-manager messages:
+
+```bash
+pnpm build
+node dist/cli.js scrape > results.json
+```
+
+Shell redirection (`>`) can overwrite an existing file and creates the destination before the command runs. Use `--output` when you want existing-file protection and a file published only after success.
+
+Press **Ctrl+C** to cancel; cancellation aborts requests and retry waits and exits with code 130 (SIGTERM: 143). Errors go to stderr with exit code 1 and no partial-success JSON. Help/version exit successfully without fetching. Use `pnpm dev --version` to see the package version.
 
 ## Structure and conventions
 
