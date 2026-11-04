@@ -82,6 +82,8 @@ The [fixture manifest](../src/__tests__/fixtures/catalogue/manifest.json) lists 
 
 `product-behaviour.txt` is an exact excerpt from the captured bundle, retained as evidence rather than executable application or test code. Fixture contents are intentionally excluded from automatic formatting so captures remain stable.
 
-The fixture set covers nested categories, featured-product overlap, pagination gaps and termination, equal names/prices on distinct IDs, long names, storage-only products, colours-only products and combined options. It is not a complete crawl and does not prove that all products share these shapes. HTTP failure/retry cases and malformed data still need controlled test inputs in the implementation tickets.
+The `synthetic/` subdirectory added for #5 contains explicitly labelled ordinary and single-colour examples. These are authored test inputs, not captured pages, and are outside the capture manifest.
+
+The captured fixture set covers nested categories, featured-product overlap, pagination gaps and termination, equal names/prices on distinct IDs, long names, storage-only products, colours-only products and combined options. It is not a complete crawl and does not prove that all products share these shapes. HTTP failure/retry cases and malformed data still need controlled test inputs in the implementation tickets.
 
 Next: implement traversal in #4 and extraction/aggregation in #5 using this evidence. Full catalogue counts, output totals and a live end-to-end run belong to #6. No scraper behaviour changed in this investigation.
