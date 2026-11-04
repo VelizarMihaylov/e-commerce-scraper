@@ -45,7 +45,7 @@ This repository has its own package manifest, lockfile and configurations. GitHu
 
 The CLI uses Commander for generated help and consistent argument errors. Run `node dist/cli.js --help` for usage or `node dist/cli.js --version` for the package version. Unsupported options and positional arguments exit with code 1.
 
-Catalogue retrieval is implemented as an internal module. Product extraction and CLI integration are still pending: normal CLI execution exits with code 1, explains the limitation on stderr and emits no JSON.
+Catalogue retrieval, product extraction and aggregation are implemented as internal modules. CLI integration is still pending: normal CLI execution exits with code 1, explains the limitation on stderr and emits no JSON.
 
 Once scraping is implemented, capture JSON directly from the built entry point to avoid package-manager output:
 
@@ -60,10 +60,12 @@ node dist/cli.js > results.json
 - `src/catalogue.ts`: category/pagination discovery and collection of unique product detail pages.
 - `src/http.ts`: HTML retrieval with request timeouts and bounded transient retries.
 - `src/site.ts`: catalogue URL scope and canonicalization.
+- `src/parse.ts`: pure detail-page extraction and enabled storage configuration expansion.
+- `src/aggregate.ts`: deduplication, integer-cent totals and output validation.
 - `src/product.ts`: Zod output schemas and inferred TypeScript types.
 - `src/__tests__/`: neighbouring Vitest tests with explicit expected outcomes.
 
-Add `parse.ts` when implementing product extraction. Keep external operations separate from pure parsing and aggregation. Use strict TypeScript, ESM, named exports, and explicit `.js` import extensions for compiled Node execution. Mock network boundaries in unit tests; keep live verification separate.
+Keep external operations separate from pure parsing and aggregation. Use strict TypeScript, ESM, named exports, and explicit `.js` import extensions for compiled Node execution. Mock network boundaries in unit tests; keep live verification separate.
 
 ## Catalogue retrieval
 
@@ -73,21 +75,38 @@ Listing discovery is sequential; product details are fetched in batches of three
 
 A live traversal check on 4 November 2026 retrieved **29 listing pages and 147 unique product pages** in approximately **12.4 seconds**, with no duplicate requests and a maximum of three concurrent requests. These are observed counts, not hardcoded targets. This validates discovery and retrieval; configuration prices, totals and the complete CLI still need verification. Unit tests use captured fixtures and controlled responses without accessing the live site.
 
+## Product extraction and totals
+
+`parseProductPage({ url, html })` returns products with canonical URL/configuration identity and prices in integer cents. It preserves full detail titles and descriptions, expands enabled storage options, and includes normalized colours only when at least two distinct available values remain. Missing required fields, malformed prices, unknown enabled storage values and an unexpected initial configuration fail with the product URL.
+
+The site-specific storage modifiers are documented in the [investigation](docs/catalogue-investigation.md): 128/256/512/1024 GB add $0/$20/$40/$60 to the initial 128 GB price. Disabled options are excluded; colours do not multiply configurations. This rule is based on the site's observed JavaScript and must be spot-checked against live prices before submission in #6.
+
+`aggregateProducts()` deduplicates canonical URL plus storage identity, sums cents, and returns only `{ results, total }` with numeric dollar prices. Separate products sharing a name or price remain separate. Captured phone, tablet and laptop fixtures produce seven results totalling $4,355.13, unchanged when the inputs are repeated.
+
+Run the extraction checks locally with:
+
+```bash
+pnpm exec vitest run src/__tests__/parse.test.ts src/__tests__/aggregate.test.ts
+```
+
+These checks use captured HTML plus explicitly labelled synthetic fixtures for no-control and single-colour products. They do not call the live site. The normal CLI command still reports the unimplemented integration until #6 connects these modules.
+
 ## Remaining assessment work
 
 - [x] Inspect category navigation, pagination, configuration prices, and colour options. See the [catalogue investigation](docs/catalogue-investigation.md) and its fixture manifest.
 - [x] Traverse the complete catalogue within the target site and deduplicate products.
-- [ ] Extract full names, descriptions, and prices from product detail pages.
-- [ ] Expand each HDD option into a separate product with its actual price and configuration name.
-- [ ] Include `colors` only when multiple distinct options exist.
-- [ ] Parse and sum prices in integer cents; convert to JSON numbers at the output boundary.
+- [x] Extract full names, descriptions, and prices from product detail pages.
+- [x] Expand each HDD option into a separate product with its actual price and configuration name.
+- [x] Include `colors` only when multiple distinct options exist.
+- [x] Parse and sum prices in integer cents; convert to JSON numbers at the output boundary.
 - [x] Add request timeouts, bounded transient retries, and modest concurrency.
 - [x] Fail clearly on incomplete retrieval or unexpected page structure.
-- [ ] Fail clearly on missing required product data.
-- [ ] Test fixtures, pagination, duplicates, configurations, totals, and CLI output/failure behaviour.
+- [x] Fail clearly on missing required product data.
+- [x] Test fixtures, pagination, duplicates, configurations and exact totals.
+- [ ] Connect the CLI and verify successful output and failure behaviour end to end.
 - [ ] Perform a live smoke test and document results, elapsed work time, and trade-offs.
 
-Interpretation: `total` sums each unique product/configuration once. Different products with the same price both contribute. The output schema validates shape; monetary aggregation and consistency between `results` and `total` still need implementation and tests.
+Interpretation: `total` sums each unique product/configuration once. Different products with the same price both contribute. Aggregation validates the output schema and calculates `total` from the unique results in integer cents.
 
 ## AI-assisted development
 
