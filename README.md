@@ -20,12 +20,13 @@ Open a new terminal after installation and run `command -v nvm` to confirm it is
 cd e-commerce-scraper
 nvm install
 nvm use
+npm install --global pnpm@10.25.0
 pnpm install --frozen-lockfile
 pnpm check
 node dist/cli.js --help
 ```
 
-This folder has its own package manifest, workspace boundary, lockfile, and configurations. It is self-contained and has no dependencies on other local projects. Its GitHub Actions workflow will become active when this folder is the repository root.
+This repository has its own package manifest, lockfile and configurations. GitHub Actions runs the same checks for pull requests and pushes to `main`. Install the recommended ESLint and Prettier VS Code extensions to enable editor diagnostics and formatting.
 
 ## Commands
 
@@ -41,6 +42,10 @@ This folder has its own package manifest, workspace boundary, lockfile, and conf
 | `pnpm test`         | Run deterministic unit tests                    |
 | `pnpm test:watch`   | Run tests in watch mode                         |
 | `pnpm check`        | Check formatting, lint, types, tests, and build |
+
+The CLI uses Commander for generated help and consistent argument errors. Run `node dist/cli.js --help` for usage or `node dist/cli.js --version` for the package version. Unsupported options and positional arguments exit with code 1.
+
+Scraping is not implemented yet: normal execution exits with code 1, explains the limitation on stderr and emits no JSON.
 
 Once scraping is implemented, capture JSON directly from the built entry point to avoid package-manager output:
 

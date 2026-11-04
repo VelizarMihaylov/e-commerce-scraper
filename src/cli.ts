@@ -1,28 +1,37 @@
-import { parseArgs } from 'node:util';
+import { readFileSync } from 'node:fs';
+import { Command } from 'commander';
+import { z } from 'zod';
 import { scrapeResultSchema } from './product.js';
 import { scrape, TARGET_URL } from './scrape.js';
 
 try {
-  const { values } = parseArgs({
-    options: { help: { type: 'boolean', short: 'h' } },
-    allowPositionals: false,
-    strict: true,
-  });
+  const { version } = z
+    .object({ version: z.string() })
+    .parse(
+      JSON.parse(
+        readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+      ),
+    );
 
-  if (values.help) {
-    process.stdout.write(`Usage: node dist/cli.js [--help]\n
-Scrape products from ${TARGET_URL}.
+  const program = new Command()
+    .name('node dist/cli.js')
+    .description(`Scrape products from ${TARGET_URL}.`)
+    .version(version)
+    .showHelpAfterError()
+    .addHelpText(
+      'after',
+      `
 Successful runs write one JSON object to stdout; errors go to stderr.
+Save results: node dist/cli.js > results.json
 
-Options:
-  -h, --help  Show this help message
+Status: scaffold only; scraping is not implemented yet.`,
+    )
+    .action(async () => {
+      const result = scrapeResultSchema.parse(await scrape());
+      process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    });
 
-Status: scaffold only; scraping is not implemented yet.
-`);
-  } else {
-    const result = scrapeResultSchema.parse(await scrape());
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
-  }
+  await program.parseAsync(process.argv);
 } catch (error: unknown) {
   const message = error instanceof Error ? error.message : 'Unexpected failure';
   process.stderr.write(`Scrape failed: ${message}\n`);
