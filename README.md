@@ -100,13 +100,13 @@ These checks use captured HTML plus explicitly labelled synthetic fixtures for n
 
 For a live check, run `pnpm smoke:live`. It runs the real CLI with a two-minute process limit, validates nonempty output, storage/colour coverage and the monetary total, and writes `results.json`, `stderr.log` and `summary.json` under ignored `artifacts/live/`. HTTP requests retain the normal timeout, retry and concurrency limits. This check does not assert fixed live prices or catalogue counts.
 
-In GitHub Actions, select **CI → Run workflow** for a manual live check, or use:
+In GitHub Actions, select **Live smoke test → Run workflow** for a manual live check, or use:
 
 ```bash
-gh workflow run ci.yml --repo VelizarMihaylov/e-commerce-scraper --ref main
+gh workflow run live-smoke.yml --repo VelizarMihaylov/e-commerce-scraper --ref main
 ```
 
-Only manual runs enable the `live-smoke` job. Its output and logs are uploaded as `live-smoke-output` for seven days, including on failure. There is no scheduled workflow. The live check detects retrieval, structure and total-consistency failures; it cannot independently prove that the site's pricing rules have not changed.
+The separate `live-smoke.yml` workflow runs only when manually triggered; regular CI remains in `ci.yml`. Its output and logs are uploaded as `live-smoke-output` for seven days, including on failure. There is no scheduled workflow. The live check detects retrieval, structure and total-consistency failures; it cannot independently prove that the site's pricing rules have not changed.
 
 ### Observed live results
 
